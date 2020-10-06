@@ -2,7 +2,9 @@ package main
 
 import (
 	"oskaryil/icm/multigraph"
+	// "github.com/sdboyer/gogl"
 	"fmt"
+	"time"
 	// "os"
 	// "bufio"
 	// "log"
@@ -54,9 +56,27 @@ func main() {
 	// 	fmt.Println(line)
 	// }
 
-	var g multigraph.Graph
-	gn := multigraph.NewGraphNode(1)
-	g.AddNode(gn)
-	gx := g.Nodes[0]
-	fmt.Println(gx.ID())
+	// var g multigraph.Graph
+	g := multigraph.NewUndirecctedMultiGraph()
+	n1 := g.NewNode(1)
+	n2 := g.NewNode(2)
+	g.AddNode(n1)
+	g.AddNode(n2)
+	// l1 := g.NewLine(n1, n2)
+	l2 := g.NewLine(n2, n1, 1233, multigraph.Timestamp(time.Now()))
+	// g.SetLine(l1)
+	g.SetLine(l2)
+	// gx := g.Nodes[0]
+	// for _, line := range g.Lines(n1.ID(), n2.ID()).lines {
+	// 	fmt.Println(line)	
+	// }
+	// g.Lines(n1.ID(), n2.ID()).lines
+	it := g.Lines(n1.ID(), n2.ID())
+	it.Next()
+	t, ok := g.(multigraph.Graph)
+	// fmt.Println(it.Line().LineData)
+
+	fmt.Println(g.HasEdgeBetween(n1.ID(), n2.ID()))
+
+	// graph := gogl.Spec().MultiGraph().Parallel().Undirected().Create().(gogl.DataGraph)
 }
