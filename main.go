@@ -71,10 +71,12 @@ func main() {
 	// 	fmt.Println(line)	
 	// }
 	// g.Lines(n1.ID(), n2.ID()).lines
-	it := g.Lines(n1.ID(), n2.ID())
-	it.Next()
-	t, ok := g.(multigraph.Graph)
+	// it := g.Lines(n1.ID(), n2.ID())
+	// it.Next()
+	// t, ok := g.(multigraph.Graph)
 	// fmt.Println(it.Line().LineData)
+
+	fmt.Println(g.LinesBetween(n1.ID(), n2.ID())[0].LineData.DiffusionTime())
 
 	fmt.Println(g.HasEdgeBetween(n1.ID(), n2.ID()))
 
