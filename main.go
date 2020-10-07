@@ -9,54 +9,64 @@ import (
 	// "bufio"
 	// "log"
 	// "encoding/csv"
-	// "io"
+	"os"
+	"bufio"
+	"strings"
+	"strconv"
 )
 
 const (
 	fname string = "android.csv"
 	dsname string = "android"
 )
+	
+func check(e error) {
+	if e != nil {
+			panic(e)
+	}
+}
+
+func scanLines(path string) ([]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	var lines[] string
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	return lines, nil
+}
 
 func main() {
 
-	// f, err := hdf5.OpenFile(fname, hdf5.F_ACC_RDONLY)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// group, err := f.OpenGroup(dsname)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// set := make([]s1Type, 100)
-	// table, err := group.OpenAttribute("")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// // display the fields
-	// fmt.Printf(":: data: %v\n", set)
-
-	// // release resources
-	// table.Close()
-	// f.Close()
+	lines, err := scanLines(fname)
+	check(err)
 
 
-	// csvFile, _ := os.Open(fname)
-	// reader := csv.NewReader(bufio.NewReader(csvFile))
 
-	// for {
-	// 	line, err := reader.Read()
-	// 	if err == io.EOF {
-	// 		break
-	// 	} else if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	fmt.Println(line)
-	// }
+	for _, line := range lines {
+		spaceSplit := strings.Split(line, " ")
+		nodeUID, _ := strconv.Atoi(spaceSplit[0])
+		nodeVID, _ := strconv.Atoi(spaceSplit[1])
 
-	// var g multigraph.Graph
+		fmt.Println(nodeUID, nodeVID)
+		bestCaseTimestamp := spaceSplit[4][11:] + " " + spaceSplit[5][:len(spaceSplit[5])-3]
+		reviewId := spaceSplit[13][:len(spaceSplit[13])-1]
+		fmt.Println(bestCaseTimestamp)
+		fmt.Println(reviewId)
+
+	}
+	fmt.Println(lines[0])
+
 	g := multigraph.NewUndirecctedMultiGraph()
 	n1 := g.NewNode(1)
 	n2 := g.NewNode(2)
@@ -79,6 +89,13 @@ func main() {
 	fmt.Println(g.LinesBetween(n1.ID(), n2.ID())[0].LineData.DiffusionTime())
 
 	fmt.Println(g.HasEdgeBetween(n1.ID(), n2.ID()))
+
+	adjacentNodes := g.AdjacentNodes(n1.ID())
+	for key, val := range adjacentNodes {
+		fmt.Println("Key:", key)
+		fmt.Println("Val",  val)
+	}
+	fmt.Println(g.AdjacentNodes(n1.ID()))
 
 	// graph := gogl.Spec().MultiGraph().Parallel().Undirected().Create().(gogl.DataGraph)
 }
