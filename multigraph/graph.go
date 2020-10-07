@@ -5,7 +5,7 @@ import (
 	// "gonum.org/v1/gonum/graph/iterator"
 	"sync"
 	"time"
-	"fmt"
+	// "fmt"
 )
 
 type Timestamp time.Time
@@ -40,7 +40,6 @@ type Graph struct {
 	// map lineId->diffusionTime
 	// edgeData map[int64]*EdgeData
 	lineIDs []int64
-	nodeIDs []int64
 	lock sync.RWMutex
 }
 
@@ -55,7 +54,6 @@ func NewUndirecctedMultiGraph() *Graph {
 		lines: make(map[int64]map[int64]map[int64]*Line),
 
 
-		nodeIDs: make([]int64, 0),
 		lineIDs: make([]int64, 0),
 	}
 }
@@ -70,15 +68,21 @@ func (g *Graph) Node(id int64) *Node {
 	return g.nodes[id]
 }
 
+func (g *Graph) AdjacentNodes(id int64) map[int64]map[int64]*Line {
+	return g.lines[id]
+}
+
 // AddNode implements the NodeAdder interface
 func (g *Graph) AddNode(n *Node) {
-	if _, exists := g.nodes[n.ID()+1]; exists {
-		panic(fmt.Sprintf("simple: node ID collision: %d", n.ID()))
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	if _, exists := g.nodes[n.ID()]; exists {
+		// panic(fmt.Sprintf("simple: node ID collision: %d", n.ID()))
+		return
 	}
 
 	g.nodes[n.ID()] = n
 	g.lines[n.ID()] = make(map[int64]map[int64]*Line)
-	g.nodeIDs = append(g.nodeIDs, n.ID())
 }
 
 // AddEdge adds an undirected edge to the graph between two nodes
@@ -193,6 +197,8 @@ func (g *Graph) NewNode(id int64) *Node {
 
 // SetLine adds l, a line from one node to another. If the nodes do not exist, they are added and set to the nodes of the line otherwise.
 func (g *Graph) SetLine(l *Line) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
 	var (
 		from = l.From()
 		fid = from.ID()
