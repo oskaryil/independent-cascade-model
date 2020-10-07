@@ -18,6 +18,7 @@ import (
 const (
 	fname string = "android.csv"
 	dsname string = "android"
+	timeLayout = "2006-01-02 15:04:05"
 )
 	
 func check(e error) {
@@ -48,34 +49,42 @@ func scanLines(path string) ([]string, error) {
 
 func main() {
 
+	// Read the lines from file
 	lines, err := scanLines(fname)
 	check(err)
 
+	// Setup the graph
+	g := multigraph.NewUndirecctedMultiGraph()
 
-
+	// Parse the lines
 	for _, line := range lines {
 		spaceSplit := strings.Split(line, " ")
-		nodeUID, _ := strconv.Atoi(spaceSplit[0])
-		nodeVID, _ := strconv.Atoi(spaceSplit[1])
-
-		fmt.Println(nodeUID, nodeVID)
+		nodeUId, _ := strconv.Atoi(spaceSplit[0])
+		nodeVId, _ := strconv.Atoi(spaceSplit[1])
 		bestCaseTimestamp := spaceSplit[4][11:] + " " + spaceSplit[5][:len(spaceSplit[5])-3]
-		reviewId := spaceSplit[13][:len(spaceSplit[13])-1]
+		reviewId, _ := strconv.Atoi(spaceSplit[13][:len(spaceSplit[13])-1])
+		parsedTimestamp, _ := time.Parse(timeLayout, bestCaseTimestamp)
+
+		newNodeU := g.NewNode(int64(nodeUId))
+		newNodeV := g.NewNode(int64(nodeVId))
+		g.AddNode(newNodeU)
+		g.AddNode(newNodeV)
+
+		newLine := g.NewLine(newNodeU, newNodeV, int64(reviewId), multigraph.Timestamp(parsedTimestamp))
+		g.SetLine(newLine)
+
 		fmt.Println(bestCaseTimestamp)
 		fmt.Println(reviewId)
-
 	}
-	fmt.Println(lines[0])
 
-	g := multigraph.NewUndirecctedMultiGraph()
-	n1 := g.NewNode(1)
-	n2 := g.NewNode(2)
-	g.AddNode(n1)
-	g.AddNode(n2)
+	// n1 := g.NewNode(1)
+	// n2 := g.NewNode(2)
+	// g.AddNode(n1)
+	// g.AddNode(n2)
 	// l1 := g.NewLine(n1, n2)
-	l2 := g.NewLine(n2, n1, 1233, multigraph.Timestamp(time.Now()))
+	// l2 := g.NewLine(n2, n1, 1233, multigraph.Timestamp(time.Now()))
 	// g.SetLine(l1)
-	g.SetLine(l2)
+	// g.SetLine(l2)
 	// gx := g.Nodes[0]
 	// for _, line := range g.Lines(n1.ID(), n2.ID()).lines {
 	// 	fmt.Println(line)	
