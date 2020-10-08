@@ -3,6 +3,7 @@ package multigraph
 import (
 	// "gonum.org/v1/gonum/graph"
 	// "gonum.org/v1/gonum/graph/iterator"
+
 	"sync"
 	"time"
 )
@@ -46,8 +47,9 @@ type Graph struct {
 	nodes map[int64]*Node
 	lines map[int64]map[int64]map[int64]*Line
 	// edges map[]
-	lineIDs []int64
-	lock    sync.RWMutex
+	lineIDs   []int64
+	lineCount int64
+	lock      sync.RWMutex
 }
 
 // ID satisfies the Node interface
@@ -60,7 +62,8 @@ func NewUndirecctedMultiGraph() *Graph {
 		nodes: make(map[int64]*Node),
 		lines: make(map[int64]map[int64]map[int64]*Line),
 
-		lineIDs: make([]int64, 0),
+		lineIDs:   make([]int64, 0),
+		lineCount: 0,
 	}
 }
 
@@ -197,10 +200,15 @@ func (g *Graph) LinesBetween(xid, yid int64) []*Line {
 // not altered.
 func (line *Line) ReversedLine() *Line { line.from, line.to = line.to, line.from; return line }
 
+func (g *Graph) incrementLineCount() {
+	g.lineCount++
+}
+
 // NewLine returns a new Line from the source to the destination node.
 // The returned Line will have a graph-unique ID.
 // The Line's ID does not become valid in g until the Line is added to g.
 func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time) *Line {
+	defer g.incrementLineCount()
 	return &Line{
 		from: from,
 		to:   to,
@@ -208,7 +216,7 @@ func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time)
 			reviewID:      reviewID,
 			diffusionTime: diffusionTime,
 		},
-		id: int64(len(g.lines)),
+		id: g.lineCount,
 	}
 }
 
@@ -239,20 +247,22 @@ func (g *Graph) SetLine(l *Line) {
 		lid  = l.ID()
 	)
 
-	if _, ok := g.nodes[fid]; !ok {
+	if _, exists := g.nodes[fid]; !exists {
 		g.AddNode(from)
-	} else {
-		g.nodes[fid] = from
 	}
+	// } else {
+	// 	g.nodes[fid] = from
+	// }
 
 	if g.lines[fid][tid] == nil {
 		g.lines[fid][tid] = make(map[int64]*Line)
 	}
-	if _, ok := g.nodes[tid]; !ok {
+	if _, exists := g.nodes[tid]; !exists {
 		g.AddNode(to)
-	} else {
-		g.nodes[tid] = to
 	}
+	// } else {
+	// 	g.nodes[tid] = to
+	// }
 
 	if g.lines[tid][fid] == nil {
 		g.lines[tid][fid] = make(map[int64]*Line)
