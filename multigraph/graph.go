@@ -5,7 +5,6 @@ import (
 	// "gonum.org/v1/gonum/graph/iterator"
 	"sync"
 	"time"
-	// "fmt"
 )
 
 type Timestamp time.Time
@@ -15,17 +14,28 @@ type Node struct {
 }
 
 type Line struct {
-	id int64
+	id   int64
 	from *Node
-	to *Node
+	to   *Node
 	LineData
 }
 
+// type Edge struct {
+// 	lines []*Line
+// 	from  *Node
+// 	to    *Node
+// }
+
+// type Edge interface {
+// 	ID() int64
+// 	From() *Node
+// 	To() *Node
+// }
 
 // LineData contains the necessary diffusion data
 type LineData struct {
-	reviewID int64
-	diffusionTime Timestamp
+	reviewID      int64
+	diffusionTime time.Time
 }
 
 // func (node *GraphNode) String() string {
@@ -33,14 +43,11 @@ type LineData struct {
 // }
 
 type Graph struct {
-	// Nodes []*GraphNode	
 	nodes map[int64]*Node
-	// edges map[int64][]*GraphNode
 	lines map[int64]map[int64]map[int64]*Line
-	// map lineId->diffusionTime
-	// edgeData map[int64]*EdgeData
+	// edges map[]
 	lineIDs []int64
-	lock sync.RWMutex
+	lock    sync.RWMutex
 }
 
 // ID satisfies the Node interface
@@ -52,7 +59,6 @@ func NewUndirecctedMultiGraph() *Graph {
 	return &Graph{
 		nodes: make(map[int64]*Node),
 		lines: make(map[int64]map[int64]map[int64]*Line),
-
 
 		lineIDs: make([]int64, 0),
 	}
@@ -68,21 +74,50 @@ func (g *Graph) Node(id int64) *Node {
 	return g.nodes[id]
 }
 
-func (g *Graph) AdjacentNodes(id int64) map[int64]map[int64]*Line {
-	return g.lines[id]
+// []map[neighborVertexID]map[lineID]
+func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Line {
+	linesMap := make([]map[int64]map[int64]*Line, 0)
+	// adjacentNodes := make([]int64, 0)
+	for nodeID := range nodeIds {
+		linesMap = append(linesMap, g.lines[nodeID])
+	}
+	// for _, nodeIDToLineIDMap := range lines {
+	// 	for nID := range nodeIDToLineIDMap {
+	// 		adjacentNodes = append(adjacentNodes, nID)
+	// 	}
+	// }
+
+	lines := make([]*Line, 0)
+
+	for i := range linesMap {
+		for j := range linesMap[i] {
+			for k := range linesMap[i][j] {
+				lines = append(lines, linesMap[i][j][k])
+			}
+		}
+	}
+	return lines
+}
+
+func (g *Graph) LinesLen() int64 {
+	return int64(len(g.lines))
+}
+func (g *Graph) NodesLen() int64 {
+	return int64(len(g.nodes))
 }
 
 // AddNode implements the NodeAdder interface
-func (g *Graph) AddNode(n *Node) {
+func (g *Graph) AddNode(n *Node) *Node {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 	if _, exists := g.nodes[n.ID()]; exists {
 		// panic(fmt.Sprintf("simple: node ID collision: %d", n.ID()))
-		return
+		return g.nodes[n.ID()]
 	}
 
 	g.nodes[n.ID()] = n
 	g.lines[n.ID()] = make(map[int64]map[int64]*Line)
+	return g.nodes[n.ID()]
 }
 
 // AddEdge adds an undirected edge to the graph between two nodes
@@ -101,12 +136,12 @@ func (g *Graph) AddNode(n *Node) {
 // From satisfies the Line interface
 func (line Line) From() *Node {
 	return line.from
-} 
+}
 
 // To satisfies the Line interface
 func (line Line) To() *Node {
 	return line.to
-} 
+}
 
 // ID satisfies the Line interface
 func (line Line) ID() int64 {
@@ -150,37 +185,34 @@ func (g *Graph) LinesBetween(xid, yid int64) []*Line {
 	return lines
 }
 
-
 // Lines returns the lines from u to v if such an edge exists and nil otherwise.
 // The node v must be directly reachable from u as defined by the From method.
 // func (g *Graph) Lines(uid, vid int64) []*Lines {
 // 	return g.LinesBetween(uid, vid)
 // }
 
-
 // ReversedLine returns a new Line with the F and T fields
 // swapped. The UID of the new Line is the same as the
 // UID of the receiver. The Lines within the Edge are
 // not altered.
-func (line *Line) ReversedLine() *Line { line.from, line.to = line.to, line.from; return line}
-
+func (line *Line) ReversedLine() *Line { line.from, line.to = line.to, line.from; return line }
 
 // NewLine returns a new Line from the source to the destination node.
 // The returned Line will have a graph-unique ID.
 // The Line's ID does not become valid in g until the Line is added to g.
-func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime Timestamp) *Line {
+func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time) *Line {
 	return &Line{
-		from: from, 
-		to: to, 
+		from: from,
+		to:   to,
 		LineData: LineData{
-			reviewID: reviewID,
+			reviewID:      reviewID,
 			diffusionTime: diffusionTime,
-		}, 
+		},
 		id: int64(len(g.lines)),
 	}
 }
 
-func (ld *LineData) DiffusionTime() Timestamp {
+func (ld *LineData) DiffusionTime() time.Time {
 	return ld.diffusionTime
 }
 
@@ -201,10 +233,10 @@ func (g *Graph) SetLine(l *Line) {
 	defer g.lock.Unlock()
 	var (
 		from = l.From()
-		fid = from.ID()
-		to = l.To()
-		tid = to.ID()
-		lid = l.ID()
+		fid  = from.ID()
+		to   = l.To()
+		tid  = to.ID()
+		lid  = l.ID()
 	)
 
 	if _, ok := g.nodes[fid]; !ok {
@@ -230,4 +262,3 @@ func (g *Graph) SetLine(l *Line) {
 	g.lines[tid][fid][lid] = l
 	g.lineIDs = append(g.lineIDs, lid)
 }
-
