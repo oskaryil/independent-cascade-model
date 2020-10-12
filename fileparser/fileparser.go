@@ -54,7 +54,7 @@ func GenerateGraphFromFile(fpath string, g *multigraph.Graph) *multigraph.Graph 
 		nodeU := g.AddNode(newNodeU)
 		nodeV := g.AddNode(newNodeV)
 
-		newLine := g.NewLine(nodeU, nodeV, int64(reviewID), parsedTimestamp)
+		newLine := g.NewLine(nodeU, nodeV, int64(reviewID), parsedTimestamp, 0)
 		// if nodeUId == 1045553 {
 		// 	fmt.Println(newLine.From().ID())
 		// }
