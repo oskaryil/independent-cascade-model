@@ -4,6 +4,7 @@ import (
 	// "gonum.org/v1/gonum/graph"
 	// "gonum.org/v1/gonum/graph/iterator"
 
+	"fmt"
 	"sync"
 	"time"
 )
@@ -35,8 +36,9 @@ type Line struct {
 
 // LineData contains the necessary diffusion data
 type LineData struct {
-	reviewID      int64
-	diffusionTime time.Time
+	reviewID        int64
+	diffusionTime   time.Time
+	diffusionNumber int64
 }
 
 // func (node *GraphNode) String() string {
@@ -57,7 +59,7 @@ func (node *Node) ID() int64 {
 	return int64(node.id)
 }
 
-func NewUndirecctedMultiGraph() *Graph {
+func NewUndirectedMultiGraph() *Graph {
 	return &Graph{
 		nodes: make(map[int64]*Node),
 		lines: make(map[int64]map[int64]map[int64]*Line),
@@ -81,6 +83,10 @@ func (g *Graph) Node(id int64) *Node {
 func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Line {
 	linesMap := make([]map[int64]map[int64]*Line, 0)
 	// adjacentNodes := make([]int64, 0)
+
+	// nodeID: 1
+	// nodeId: 2
+
 	for nodeID := range nodeIds {
 		linesMap = append(linesMap, g.lines[nodeID])
 	}
@@ -91,10 +97,21 @@ func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Line {
 	// }
 
 	lines := make([]*Line, 0)
+	existsMap := make(map[*Line]bool)
 
 	for i := range linesMap {
 		for j := range linesMap[i] {
 			for k := range linesMap[i][j] {
+				// fmt.Println(linesMap[i][j])
+				line := linesMap[i][j][k]
+				// if line.To().ID() < line.From().ID() {
+				// 	line = line.ReversedLine()
+				// }
+				if _, exists := existsMap[line]; !exists {
+					lines = append(lines, linesMap[i][j][k])
+					// fmt.Printf("From: %d, To: %d, dn: %d\n", line.From().ID(), line.To().ID(), line.DiffusionNumber())
+					existsMap[line] = true
+				}
 				lines = append(lines, linesMap[i][j][k])
 			}
 		}
@@ -102,8 +119,46 @@ func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Line {
 	return lines
 }
 
-func (g *Graph) LinesLen() int64 {
-	return int64(len(g.lines))
+func (g *Graph) AdjacentEdgesSimple(nodeIds map[int64]int64) []*Line {
+	linesMap := make([]map[int64]map[int64]*Line, 0)
+	// adjacentNodes := make([]int64, 0)
+
+	// nodeID: 1
+	// nodeId: 2
+
+	for nodeID := range nodeIds {
+		linesMap = append(linesMap, g.lines[nodeID])
+	}
+	// for _, nodeIDToLineIDMap := range lines {
+	// 	for nID := range nodeIDToLineIDMap {
+	// 		adjacentNodes = append(adjacentNodes, nID)
+	// 	}
+	// }
+
+	lines := make([]*Line, 0)
+	existsMap := make(map[*Line]bool)
+
+	for i := range linesMap {
+		for j := range linesMap[i] {
+			for k := range linesMap[i][j] {
+				// fmt.Println(linesMap[i][j])
+				line := linesMap[i][j][k]
+				// if line.To().ID() < line.From().ID() {
+				// 	line = line.ReversedLine()
+				// }
+				if _, exists := existsMap[line]; !exists {
+					lines = append(lines, linesMap[i][j][k])
+					fmt.Printf("From: %d, To: %d, dn: %d\n", line.From().ID(), line.To().ID(), line.DiffusionNumber())
+					existsMap[line] = true
+				}
+			}
+		}
+	}
+	return lines
+}
+
+func (g *Graph) LineCount() int64 {
+	return g.lineCount
 }
 func (g *Graph) NodesLen() int64 {
 	return int64(len(g.nodes))
@@ -207,14 +262,15 @@ func (g *Graph) incrementLineCount() {
 // NewLine returns a new Line from the source to the destination node.
 // The returned Line will have a graph-unique ID.
 // The Line's ID does not become valid in g until the Line is added to g.
-func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time) *Line {
+func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time, diffusionNumber int64) *Line {
 	defer g.incrementLineCount()
 	return &Line{
 		from: from,
 		to:   to,
 		LineData: LineData{
-			reviewID:      reviewID,
-			diffusionTime: diffusionTime,
+			reviewID:        reviewID,
+			diffusionTime:   diffusionTime,
+			diffusionNumber: diffusionNumber,
 		},
 		id: g.lineCount,
 	}
@@ -222,6 +278,10 @@ func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time)
 
 func (ld *LineData) DiffusionTime() time.Time {
 	return ld.diffusionTime
+}
+
+func (ld *LineData) DiffusionNumber() int64 {
+	return ld.diffusionNumber
 }
 
 func (g *Graph) GetLineData(uid, vid, lineId int64) LineData {
