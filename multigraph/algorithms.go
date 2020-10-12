@@ -5,11 +5,10 @@ import (
 	"time"
 )
 
-func (g *Graph) DiffuseInformation(seed []int64, beta float64, diffusionCase string) map[int64]time.Time {
+func (g *Graph) DiffuseInformation(seed []int64, diffusionCase string) map[int64]time.Time {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	informedNodes := make(map[int64]time.Time)
-	changed := true
 
 	for _, nodeID := range seed {
 		informedNodes[nodeID] = time.Time{}
@@ -17,28 +16,47 @@ func (g *Graph) DiffuseInformation(seed []int64, beta float64, diffusionCase str
 
 	// fmt.Println(informedNodes)
 
-	for changed {
+	needsUpdate := true
+
+	for needsUpdate {
+		needsUpdate = false
 		lines := g.AdjacentEdges(informedNodes)
-		// fmt.Println(lines)
-		// fmt.Println(lines)
-		// fmt.Println(lines)
 		for i := range lines {
 			u := lines[i].From()
 			v := lines[i].To()
 			dt := lines[i].DiffusionTime()
 
-			changed = false
-
-			if informedNodes[u.ID()].IsZero() || informedNodes[u.ID()].Before(dt) {
-				if nodeV, exists := informedNodes[v.ID()]; !exists || (dt.Before(nodeV) && !nodeV.IsZero()) {
-					// fmt.Println(exists, dt)
-					// fmt.Println(v.ID())
-					informedNodes[v.ID()] = dt
-					changed = true
+			if _, exists := informedNodes[u.ID()]; exists {
+				if informedNodes[u.ID()].IsZero() || dt.After(informedNodes[u.ID()]) {
+					if _, exists := informedNodes[v.ID()]; !exists {
+						informedNodes[v.ID()] = dt
+						needsUpdate = true
+					} else {
+						if !informedNodes[v.ID()].IsZero() && dt.Before(informedNodes[v.ID()]) {
+							informedNodes[v.ID()] = dt
+							needsUpdate = true
+						}
+					}
 				}
 			}
+
+			if _, exists := informedNodes[v.ID()]; exists {
+				if informedNodes[v.ID()].IsZero() || dt.After(informedNodes[v.ID()]) {
+					if _, exists := informedNodes[u.ID()]; !exists {
+						informedNodes[u.ID()] = dt
+						needsUpdate = true
+					} else {
+						if !informedNodes[u.ID()].IsZero() && dt.Before(informedNodes[u.ID()]) {
+							informedNodes[u.ID()] = dt
+							needsUpdate = true
+						}
+					}
+				}
+			}
+
 		}
 	}
+
 	return informedNodes
 }
 
