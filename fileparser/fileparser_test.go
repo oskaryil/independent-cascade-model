@@ -6,7 +6,7 @@ import (
 )
 
 func TestGenerateGraphFromFile(t *testing.T) {
-	g := multigraph.NewUndirecctedMultiGraph()
+	g := multigraph.NewUndirectedMultiGraph()
 
 	fpath := "../android.csv"
 
