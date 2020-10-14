@@ -1,3 +1,4 @@
+// Package multigraph provides a multigraph data structure with basic graph operations
 package multigraph
 
 import (
