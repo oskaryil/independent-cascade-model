@@ -42,3 +42,21 @@ Example (run from the root of the repository):
 ```bash
 $ ./icm -f ./android.csv
 ```
+
+## Tests
+
+**Prerequisites:** Go version >= v 1.15
+
+Running tests: `$ make test` alternatively `$ go test ./...`
+
+### Unit and integration test:
+
+```bash
+$ go test ./...
+```
+
+### Benchmark tests
+
+```bash
+$ go test -bench=.
+```
