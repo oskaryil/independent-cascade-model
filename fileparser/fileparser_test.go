@@ -15,8 +15,8 @@ func TestGenerateGraphFromFile(t *testing.T) {
 	const expectedNodesLen int64 = 1128
 	const expectedLineCount int64 = 12147
 
-	if g.NodesLen() != expectedNodesLen {
-		t.Errorf("Number of nodes are incorrent, actual: %d, expected: %d", g.NodesLen(), expectedNodesLen)
+	if g.NodeCount() != expectedNodesLen {
+		t.Errorf("Number of nodes are incorrent, actual: %d, expected: %d", g.NodeCount(), expectedNodesLen)
 	}
 
 	if g.LineCount() != expectedLineCount {
