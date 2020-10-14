@@ -9,9 +9,6 @@ import (
 
 func main() {
 
-	// Setup the graph
-	g := multigraph.NewUndirectedMultiGraph()
-
 	var fname string
 
 	flag.StringVar(&fname, "f", "", "Relative path to the input data file")
@@ -21,6 +18,9 @@ func main() {
 	if len(fname) == 0 {
 		panic("No input file specified")
 	}
+
+	// Setup the graph
+	g := multigraph.NewUndirectedMultiGraph()
 
 	fileparser.GenerateGraphFromFile(fname, g)
 
