@@ -1,36 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"oskaryil/icm/fileparser"
 	"oskaryil/icm/multigraph"
 )
 
-const (
-	fname string = "android.csv"
-)
-
 func main() {
 
 	// Setup the graph
-	g := multigraph.NewUndirecctedMultiGraph()
+	g := multigraph.NewUndirectedMultiGraph()
+
+	var fname string
+
+	flag.StringVar(&fname, "f", "", "Relative path to the input data file")
+
+	flag.Parse()
+
+	if len(fname) == 0 {
+		panic("No input file specified")
+	}
 
 	fileparser.GenerateGraphFromFile(fname, g)
 
 	seed := make([]int64, 0)
-	// seed = append(seed, 1101609)
-	// seed = append(seed, 1478611)
 	seed = append(seed, 1000205)
-	// seed := make(map[int64]time.Time)
 
-	// seed[1000205] = time.Time{}
-
-	informedNodes := g.DiffuseInformation(seed, 1.0, "best_case")
+	informedNodes := g.DiffuseInformation(seed, "best_case")
 	cnt := 0
+	const timeFormat = "2006-01-02 15:04:05"
+	fmt.Printf("{")
 	for i, val := range informedNodes {
-		fmt.Println(i, val)
+		fmt.Printf("%d: '%v'\n", i, val.Format(timeFormat))
 		cnt++
 	}
-	fmt.Println(cnt)
+	fmt.Printf("Number of nodes reached: %d \n", cnt)
 
 }
