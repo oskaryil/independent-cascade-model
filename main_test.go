@@ -11,6 +11,8 @@ func BenchmarkAndroid(b *testing.B) {
 
 		g := multigraph.NewUndirectedMultiGraph()
 
+		const fname string = "android.csv"
+
 		fileparser.GenerateGraphFromFile(fname, g)
 		seed := make([]int64, 0)
 		seed = append(seed, 1000205)
