@@ -1,7 +1,7 @@
 package fileparser
 
 import (
-	"oskaryil/icm/multigraph"
+	"github.com/oskaryil/independent-cascade-model/multigraph"
 	"testing"
 )
 

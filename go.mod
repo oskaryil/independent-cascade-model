@@ -1,4 +1,4 @@
-module oskaryil/icm
+module github.com/oskaryil/independent-cascade-model
 
 go 1.15
 

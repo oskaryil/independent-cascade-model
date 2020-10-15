@@ -3,8 +3,8 @@ package fileparser
 import (
 	"bufio"
 	"os"
-	"oskaryil/icm/multigraph"
-	"oskaryil/icm/utils"
+	"github.com/oskaryil/independent-cascade-model/multigraph"
+	"github.com/oskaryil/independent-cascade-model/utils"
 	"strconv"
 	"strings"
 	"time"

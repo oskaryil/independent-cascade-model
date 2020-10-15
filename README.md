@@ -1,6 +1,6 @@
 # Independent Cascade Model in Go
 
-![Go](https://github.com/oskaryil/icm/workflows/Go/badge.svg)
+![Go](https://github.com/github.com/oskaryil/independent-cascade-model/workflows/Go/badge.svg)
 
 This repository contains code that implements the independent cascade model based on a temporal network.
 
