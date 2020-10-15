@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"oskaryil/icm/fileparser"
-	"oskaryil/icm/multigraph"
+
+	"github.com/oskaryil/independent-cascade-model/fileparser"
+	"github.com/oskaryil/independent-cascade-model/multigraph"
 )
 
 func main() {
@@ -29,11 +30,11 @@ func main() {
 
 	informedNodes := g.DiffuseInformation(seed, "best_case")
 	cnt := 0
-	const timeFormat = "2006-01-02 15:04:05"
+	const timeFormat = "2006-01-02T15:04:05"
 	for i, val := range informedNodes {
-		fmt.Printf("%d: '%v'\n", i, val.Format(timeFormat))
+		fmt.Printf("%d %v\n", i, val.Format(timeFormat))
 		cnt++
 	}
-	fmt.Printf("Number of nodes reached: %d \n", cnt)
+	// fmt.Printf("Number of nodes reached: %d \n", cnt)
 
 }
