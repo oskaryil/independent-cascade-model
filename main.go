@@ -11,8 +11,12 @@ import (
 func main() {
 
 	var fname string
+	var printNodeCount bool
+	var seedNode int64
 
 	flag.StringVar(&fname, "f", "", "Relative path to the input data file")
+	flag.BoolVar(&printNodeCount, "nc", false, "Print node count at the end of output")
+	flag.Int64Var(&seedNode, "seed", 1000205, "A Seed node to start from")
 
 	flag.Parse()
 
@@ -26,7 +30,7 @@ func main() {
 	fileparser.GenerateGraphFromFile(fname, g)
 
 	seed := make([]int64, 0)
-	seed = append(seed, 1000205)
+	seed = append(seed, seedNode)
 
 	informedNodes := g.DiffuseInformation(seed, "best_case")
 	cnt := 0
@@ -35,6 +39,8 @@ func main() {
 		fmt.Printf("%d %v\n", i, val.Format(timeFormat))
 		cnt++
 	}
-	// fmt.Printf("Number of nodes reached: %d \n", cnt)
+	if printNodeCount {
+		fmt.Printf("Number of nodes reached: %d \n", cnt)
+	}
 
 }
