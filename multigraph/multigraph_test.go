@@ -9,8 +9,8 @@ import (
 func TestNewUndirectedMultiGraph(t *testing.T) {
 	testGraph := NewUndirectedMultiGraph()
 
-	assert.Equal(t, testGraph.lineCount, int64(0), "Line count should be 0")
-	assert.Equal(t, testGraph.lineIDs, make([]int64, 0), "LineIDs slice should be empty")
+	assert.Equal(t, testGraph.edgeCount, int64(0), "Edge count should be 0")
+	assert.Equal(t, testGraph.edgeIDs, make([]int64, 0), "EdgeIDs slice should be empty")
 }
 
 func TestNewNode(t *testing.T) {

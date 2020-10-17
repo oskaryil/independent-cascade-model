@@ -20,11 +20,11 @@ func (g *Graph) DiffuseInformation(seed []int64, diffusionCase string) map[int64
 
 	for needsUpdate {
 		needsUpdate = false
-		lines := g.AdjacentEdges(informedNodes)
-		for i := range lines {
-			u := lines[i].From()
-			v := lines[i].To()
-			dt := lines[i].DiffusionTime()
+		edges := g.AdjacentEdges(informedNodes)
+		for i := range edges {
+			u := edges[i].From()
+			v := edges[i].To()
+			dt := edges[i].DiffusionTime()
 
 			if _, exists := informedNodes[u.ID()]; exists {
 				if informedNodes[u.ID()].IsZero() || dt.After(informedNodes[u.ID()]) {
@@ -71,12 +71,12 @@ func (g *Graph) DiffuseInformationSimple(seed []int64, diffusionCase string) map
 
 	for needsUpdate {
 		needsUpdate = false
-		lines := g.AdjacentEdgesSimple(informedNodes)
+		edges := g.AdjacentEdgesSimple(informedNodes)
 		fmt.Println("iteration")
-		for i := range lines {
-			u := lines[i].From()
-			v := lines[i].To()
-			dn := lines[i].DiffusionNumber()
+		for i := range edges {
+			u := edges[i].From()
+			v := edges[i].To()
+			dn := edges[i].DiffusionNumber()
 
 			if _, exists := informedNodes[u.ID()]; exists {
 				if informedNodes[u.ID()] == 0 || dn > informedNodes[u.ID()] {

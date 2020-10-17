@@ -3,11 +3,12 @@ package fileparser
 import (
 	"bufio"
 	"os"
-	"github.com/oskaryil/independent-cascade-model/multigraph"
-	"github.com/oskaryil/independent-cascade-model/utils"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/oskaryil/independent-cascade-model/multigraph"
+	"github.com/oskaryil/independent-cascade-model/utils"
 )
 
 const (
@@ -25,24 +26,24 @@ func scanLines(path string) ([]string, error) {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
-	var lines []string
+	var edges []string
 
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+		edges = append(edges, scanner.Text())
 	}
 
-	return lines, nil
+	return edges, nil
 }
 
 // GenerateGraphFromFile takes a file path and a Graph pointer and returns a populated Graph
 func GenerateGraphFromFile(fpath string, g *multigraph.Graph) *multigraph.Graph {
-	// Read the lines from file
-	lines, err := scanLines(fpath)
+	// Read the edges from file
+	edges, err := scanLines(fpath)
 	utils.CheckError(err)
 
-	// Parse the lines
-	for _, line := range lines {
-		spaceSplit := strings.Split(line, " ")
+	// Parse the edges
+	for _, edge := range edges {
+		spaceSplit := strings.Split(edge, " ")
 		nodeUID, _ := strconv.Atoi(spaceSplit[0])
 		nodeVID, _ := strconv.Atoi(spaceSplit[1])
 		bestCaseTimestamp := spaceSplit[4][11:] + " " + spaceSplit[5][:len(spaceSplit[5])-3]
@@ -54,11 +55,11 @@ func GenerateGraphFromFile(fpath string, g *multigraph.Graph) *multigraph.Graph 
 		nodeU := g.AddNode(newNodeU)
 		nodeV := g.AddNode(newNodeV)
 
-		newLine := g.NewLine(nodeU, nodeV, int64(reviewID), parsedTimestamp, 0)
+		newEdge := g.NewEdge(nodeU, nodeV, int64(reviewID), parsedTimestamp, 0)
 		// if nodeUId == 1045553 {
-		// 	fmt.Println(newLine.From().ID())
+		// 	fmt.Println(newEdge.From().ID())
 		// }
-		g.SetLine(newLine)
+		g.SetEdge(newEdge)
 	}
 	return g
 }

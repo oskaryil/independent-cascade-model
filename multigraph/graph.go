@@ -12,16 +12,16 @@ type Node struct {
 	id int64
 }
 
-// Line is a data structure representing an edge in the graph
-type Line struct {
+// Edge is a data structure representing an edge in the graph
+type Edge struct {
 	id   int64
 	from *Node
 	to   *Node
-	LineData
+	EdgeData
 }
 
-// LineData contains the necessary diffusion data
-type LineData struct {
+// EdgeData contains the necessary diffusion data
+type EdgeData struct {
 	reviewID        int64
 	diffusionTime   time.Time
 	diffusionNumber int64
@@ -30,10 +30,10 @@ type LineData struct {
 // Graph is the graph data structure
 type Graph struct {
 	nodes map[int64]*Node
-	lines map[int64]map[int64]map[int64]*Line
+	edges map[int64]map[int64]map[int64]*Edge
 	// edges map[]
-	lineIDs   []int64
-	lineCount int64
+	edgeIDs   []int64
+	edgeCount int64
 	lock      sync.RWMutex
 }
 
@@ -46,10 +46,10 @@ func (node *Node) ID() int64 {
 func NewUndirectedMultiGraph() *Graph {
 	return &Graph{
 		nodes: make(map[int64]*Node),
-		lines: make(map[int64]map[int64]map[int64]*Line),
+		edges: make(map[int64]map[int64]map[int64]*Edge),
 
-		lineIDs:   make([]int64, 0),
-		lineCount: 0,
+		edgeIDs:   make([]int64, 0),
+		edgeCount: 0,
 	}
 }
 
@@ -58,66 +58,66 @@ func (g *Graph) Node(id int64) *Node {
 	return g.nodes[id]
 }
 
-// AdjacentEdges returns a slice with the lines(edges) adjacent to each of the nodes in nodeIds
-func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Line {
-	linesMap := make([]map[int64]map[int64]*Line, 0)
+// AdjacentEdges returns a slice with the edges(edges) adjacent to each of the nodes in nodeIds
+func (g *Graph) AdjacentEdges(nodeIds map[int64]time.Time) []*Edge {
+	edgesMap := make([]map[int64]map[int64]*Edge, 0)
 	for nodeID := range nodeIds {
-		linesMap = append(linesMap, g.lines[nodeID])
+		edgesMap = append(edgesMap, g.edges[nodeID])
 	}
 
-	lines := make([]*Line, 0)
-	existsMap := make(map[*Line]bool)
+	edges := make([]*Edge, 0)
+	existsMap := make(map[*Edge]bool)
 
-	for i := range linesMap {
-		for j := range linesMap[i] {
-			for k := range linesMap[i][j] {
-				line := linesMap[i][j][k]
-				// if line.To().ID() < line.From().ID() {
-				// 	line = line.ReversedLine()
+	for i := range edgesMap {
+		for j := range edgesMap[i] {
+			for k := range edgesMap[i][j] {
+				edge := edgesMap[i][j][k]
+				// if edge.To().ID() < edge.From().ID() {
+				// 	edge = edge.ReversedEdge()
 				// }
-				if _, exists := existsMap[line]; !exists {
-					lines = append(lines, linesMap[i][j][k])
-					existsMap[line] = true
+				if _, exists := existsMap[edge]; !exists {
+					edges = append(edges, edgesMap[i][j][k])
+					existsMap[edge] = true
 				}
-				lines = append(lines, linesMap[i][j][k])
+				edges = append(edges, edgesMap[i][j][k])
 			}
 		}
 	}
-	return lines
+	return edges
 }
 
 // AdjacentEdgesSimple is used for simple graphs without timestamps, using numbers intead.
-func (g *Graph) AdjacentEdgesSimple(nodeIds map[int64]int64) []*Line {
-	linesMap := make([]map[int64]map[int64]*Line, 0)
+func (g *Graph) AdjacentEdgesSimple(nodeIds map[int64]int64) []*Edge {
+	edgesMap := make([]map[int64]map[int64]*Edge, 0)
 
 	for nodeID := range nodeIds {
-		linesMap = append(linesMap, g.lines[nodeID])
+		edgesMap = append(edgesMap, g.edges[nodeID])
 	}
 
-	lines := make([]*Line, 0)
-	existsMap := make(map[*Line]bool)
+	edges := make([]*Edge, 0)
+	existsMap := make(map[*Edge]bool)
 
-	for i := range linesMap {
-		for j := range linesMap[i] {
-			for k := range linesMap[i][j] {
-				line := linesMap[i][j][k]
-				// if line.To().ID() < line.From().ID() {
-				// 	line = line.ReversedLine()
+	for i := range edgesMap {
+		for j := range edgesMap[i] {
+			for k := range edgesMap[i][j] {
+				edge := edgesMap[i][j][k]
+				// if edge.To().ID() < edge.From().ID() {
+				// 	edge = edge.ReversedEdge()
 				// }
-				if _, exists := existsMap[line]; !exists {
-					lines = append(lines, linesMap[i][j][k])
-					fmt.Printf("From: %d, To: %d, dn: %d\n", line.From().ID(), line.To().ID(), line.DiffusionNumber())
-					existsMap[line] = true
+				if _, exists := existsMap[edge]; !exists {
+					edges = append(edges, edgesMap[i][j][k])
+					fmt.Printf("From: %d, To: %d, dn: %d\n", edge.From().ID(), edge.To().ID(), edge.DiffusionNumber())
+					existsMap[edge] = true
 				}
 			}
 		}
 	}
-	return lines
+	return edges
 }
 
-// LineCount returns the number of lines(edges) in the graph
-func (g *Graph) LineCount() int64 {
-	return g.lineCount
+// EdgeCount returns the number of edges(edges) in the graph
+func (g *Graph) EdgeCount() int64 {
+	return g.edgeCount
 }
 
 // NodeCount returns the number of nodes in the graph
@@ -135,7 +135,7 @@ func (g *Graph) AddNode(n *Node) *Node {
 	}
 
 	g.nodes[n.ID()] = n
-	g.lines[n.ID()] = make(map[int64]map[int64]*Line)
+	g.edges[n.ID()] = make(map[int64]map[int64]*Edge)
 	return g.nodes[n.ID()]
 }
 
@@ -152,79 +152,79 @@ func (g *Graph) AddNode(n *Node) *Node {
 // 	g.lock.Unlock()
 // }
 
-// From satisfies the Line interface
-func (line Line) From() *Node {
-	return line.from
+// From satisfies the Edge interface
+func (edge Edge) From() *Node {
+	return edge.from
 }
 
-// To satisfies the Line interface
-func (line Line) To() *Node {
-	return line.to
+// To satisfies the Edge interface
+func (edge Edge) To() *Node {
+	return edge.to
 }
 
-// ID satisfies the Line interface
-func (line Line) ID() int64 {
-	return line.id
+// ID satisfies the Edge interface
+func (edge Edge) ID() int64 {
+	return edge.id
 }
 
 // HasEdgeBetween returns whether an edge exists between nodes x and y.
 func (g *Graph) HasEdgeBetween(xid, yid int64) bool {
-	_, ok := g.lines[xid][yid]
+	_, ok := g.edges[xid][yid]
 	return ok
 }
 
-// LinesBetween returns an array of lines between two nodes.
-func (g *Graph) LinesBetween(xid, yid int64) []*Line {
-	var lines []*Line
-	for _, l := range g.lines[xid][yid] {
+// EdgesBetween returns an array of edges between two nodes.
+func (g *Graph) EdgesBetween(xid, yid int64) []*Edge {
+	var edges []*Edge
+	for _, l := range g.edges[xid][yid] {
 		if l.From().ID() != xid {
-			l = l.ReversedLine()
+			l = l.ReversedEdge()
 		}
-		lines = append(lines, l)
+		edges = append(edges, l)
 	}
-	return lines
+	return edges
 }
 
-// ReversedLine returns a new Line with the F and T fields
-// swapped. The UID of the new Line is the same as the
-// UID of the receiver. The Lines within the Edge are
+// ReversedEdge returns a new Edge with the F and T fields
+// swapped. The UID of the new Edge is the same as the
+// UID of the receiver. The Edges within the Edge are
 // not altered.
-func (line *Line) ReversedLine() *Line { line.from, line.to = line.to, line.from; return line }
+func (edge *Edge) ReversedEdge() *Edge { edge.from, edge.to = edge.to, edge.from; return edge }
 
-func (g *Graph) incrementLineCount() {
-	g.lineCount++
+func (g *Graph) incrementEdgeCount() {
+	g.edgeCount++
 }
 
-// NewLine returns a new Line from the source to the destination node.
-// The returned Line will have a graph-unique ID.
-// The Line's ID does not become valid in g until the Line is added to g.
-func (g *Graph) NewLine(from, to *Node, reviewID int64, diffusionTime time.Time, diffusionNumber int64) *Line {
-	defer g.incrementLineCount()
-	return &Line{
+// NewEdge returns a new Edge from the source to the destination node.
+// The returned Edge will have a graph-unique ID.
+// The Edge's ID does not become valid in g until the Edge is added to g.
+func (g *Graph) NewEdge(from, to *Node, reviewID int64, diffusionTime time.Time, diffusionNumber int64) *Edge {
+	defer g.incrementEdgeCount()
+	return &Edge{
 		from: from,
 		to:   to,
-		LineData: LineData{
+		EdgeData: EdgeData{
 			reviewID:        reviewID,
 			diffusionTime:   diffusionTime,
 			diffusionNumber: diffusionNumber,
 		},
-		id: g.lineCount,
+		id: g.edgeCount,
 	}
 }
 
-// DiffusionTime is a getter for the DiffusionTime of a line
-func (ld *LineData) DiffusionTime() time.Time {
+// DiffusionTime is a getter for the DiffusionTime of a edge
+func (ld *EdgeData) DiffusionTime() time.Time {
 	return ld.diffusionTime
 }
 
-// DiffusionNumber is a getter for the DiffusionTime of a line
-func (ld *LineData) DiffusionNumber() int64 {
+// DiffusionNumber is a getter for the DiffusionTime of a edge
+func (ld *EdgeData) DiffusionNumber() int64 {
 	return ld.diffusionNumber
 }
 
-// GetLineData is a getter method for the LineData of a line
-func (g *Graph) GetLineData(uid, vid, lineID int64) LineData {
-	return g.lines[uid][vid][lineID].LineData
+// GetEdgeData is a getter method for the EdgeData of a edge
+func (g *Graph) GetEdgeData(uid, vid, edgeID int64) EdgeData {
+	return g.edges[uid][vid][edgeID].EdgeData
 }
 
 // NewNode initializes a new node object with the provided id.
@@ -235,8 +235,8 @@ func (g *Graph) NewNode(id int64) *Node {
 	return &Node{id: id}
 }
 
-// SetLine adds l, a line from one node to another. If the nodes do not exist, they are added and set to the nodes of the line otherwise.
-func (g *Graph) SetLine(l *Line) {
+// SetEdge adds l, a edge from one node to another. If the nodes do not exist, they are added and set to the nodes of the edge otherwise.
+func (g *Graph) SetEdge(l *Edge) {
 	g.lock.Lock()
 	defer g.lock.Unlock()
 	var (
@@ -251,18 +251,18 @@ func (g *Graph) SetLine(l *Line) {
 		g.AddNode(from)
 	}
 
-	if g.lines[fid][tid] == nil {
-		g.lines[fid][tid] = make(map[int64]*Line)
+	if g.edges[fid][tid] == nil {
+		g.edges[fid][tid] = make(map[int64]*Edge)
 	}
 	if _, exists := g.nodes[tid]; !exists {
 		g.AddNode(to)
 	}
 
-	if g.lines[tid][fid] == nil {
-		g.lines[tid][fid] = make(map[int64]*Line)
+	if g.edges[tid][fid] == nil {
+		g.edges[tid][fid] = make(map[int64]*Edge)
 	}
 
-	g.lines[fid][tid][lid] = l
-	g.lines[tid][fid][lid] = l
-	g.lineIDs = append(g.lineIDs, lid)
+	g.edges[fid][tid][lid] = l
+	g.edges[tid][fid][lid] = l
+	g.edgeIDs = append(g.edgeIDs, lid)
 }
