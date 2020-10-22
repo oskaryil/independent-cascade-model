@@ -24,6 +24,12 @@ You can run the code with the command:
 $ go run main.go -f <relative-file-path>
 ```
 
+To see the possible command-line flags that can be passed:
+
+```bash
+$ go run main.go --help
+```
+
 To build a binary:
 Run the following command from the root of the repository:
 
@@ -43,11 +49,20 @@ Example (run from the root of the repository):
 $ ./icm -f ./android.csv
 ```
 
+### Running with Docker
+
+To run with docker you can manually build the docker image using the Dockerfile or you can pull the latest docker image.
+
+```bash
+$ docker pull oskaryil/go_icm
+$ docker run -it oskaryil/go_icm
+```
+
 ## Tests
 
 **Prerequisites:** Go version >= v 1.15
 
-Running tests: `$ make test` alternatively `$ go test ./...`
+Running tests: `$ make test` or `$ go test ./...`
 
 ### Unit and integration test:
 
@@ -57,6 +72,12 @@ $ go test ./...
 
 ### Benchmark tests
 
+Note that these automated benchmark tests show a much higher time than when timing the code manually.
+
 ```bash
 $ go test -bench=.
+```
+
+```
+
 ```
