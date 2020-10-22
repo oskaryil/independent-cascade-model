@@ -77,7 +77,3 @@ Note that these automated benchmark tests show a much higher time than when timi
 ```bash
 $ go test -bench=.
 ```
-
-```
-
-```
